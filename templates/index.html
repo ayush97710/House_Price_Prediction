@@ -22,11 +22,11 @@
         <p>Enter the details below to estimate the price of your house.</p>
 
         <form action="/predict" method="post">
-            <input type="text" name="area" placeholder="🏠 Sqft Living Area" required><br>
-            <input type="text" name="bedrooms" placeholder="🛏 Number of Bedrooms" required><br>
-            <input type="text" name="bathrooms" placeholder="🛁 Number of Bathrooms" required><br>
-            <input type="text" name="floors" placeholder="🏢 Number of Floors" required><br>
-            <input type="text" name="condition" placeholder="📊 Condition (1-5)" required><br>
+            <input type="number" name="area" placeholder="🏠 Sqft Living Area" required><br>
+            <input type="number" name="bedrooms" placeholder="🛏 Number of Bedrooms" required><br>
+            <input type="number" name="bathrooms" placeholder="🛁 Number of Bathrooms" required><br>
+            <input type="number" name="floors" placeholder="🏢 Number of Floors" required><br>
+            <input type="number" name="condition" placeholder="📊 Condition (1-5)" min="1" max="5" required><br>
             <button type="submit">🔮 Predict Price</button>
         </form>        
 
