@@ -3,17 +3,31 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY", "your_secret_key")  # Use environment variable for security
 
-model = joblib.load("house_price_model.pkl")
+# Load the model
+MODEL_PATH = os.path.join(os.getcwd(), "house_price_model.pkl")
+model = joblib.load(MODEL_PATH)
 
 # Define the CSV file path
 CSV_FILE = "predictions.csv"
 
-# Dummy credentials
-USER_CREDENTIALS = {"kr624ayush@gmail.com": "123"}
+# Google OAuth Configuration (Replace with actual credentials)
+app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")  
+app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
+
+oauth = OAuth(app)
+google = oauth.register(
+    name="google",
+    client_id=app.config["GOOGLE_CLIENT_ID"],
+    client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+    access_token_url="https://oauth2.googleapis.com/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+    client_kwargs={"scope": "openid email profile"},
+)
 
 @app.route("/")
 def home():
@@ -21,33 +35,21 @@ def home():
         return redirect(url_for("login"))
     return render_template("index.html", user=session.get("user"))
 
+@app.route("/login")
+def google_login():
+    return google.authorize_redirect(url_for("authorize", _external=True, _scheme="https"))  # Ensure HTTPS in production
 
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-
-        if email in USER_CREDENTIALS and USER_CREDENTIALS[email] == password:
-            session["user"] = email  # Store session
-            return redirect(url_for("home"))  # Redirect to home page
-
-        return render_template("login.html", error="Invalid email or password!")
-
-    return render_template("login.html")
-
-
-
+@app.route("/authorize")
+def authorize():
+    token = google.authorize_access_token()
+    user_info = google.parse_id_token(token)
+    session["user"] = user_info["email"]
+    return redirect(url_for("home"))
 
 @app.route("/logout")
 def logout():
     session.pop("user", None)
-    return redirect(url_for("login"))  # Redirect to login page
-
-
-
+    return redirect(url_for("login"))
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -74,11 +76,9 @@ def predict():
 
         return render_template("index.html", prediction_text=f"Estimated House Price: Rs {prediction:,.2f}")
 
-    except Exception as e:
+    except Exception:
         return render_template("index.html", prediction_text="Error: Invalid input!")
 
-
-
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Use dynamic port for deployment
+    app.run(host="0.0.0.0", port=port)

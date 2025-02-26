@@ -9,12 +9,10 @@
 <body>
     <div class="container">
         <h2>🔑 Login to Continue</h2>
-        <form action="{{ url_for('login') }}" method="post">
-            <input type="email" name="email" placeholder="📧 Enter Email" required><br>
-            <input type="password" name="password" placeholder="🔒 Enter Password" required><br>
-            <button type="submit">🚀 Login</button>
-        </form>        
-
+        <a href="{{ url_for('login') }}">
+            <button>🚀 Sign in with Google</button>
+        </a>
+        
         {% if error %}
             <p class="error">{{ error }}</p>
         {% endif %}
