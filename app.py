@@ -80,5 +80,5 @@ def predict():
         return render_template("index.html", prediction_text="Error: Invalid input!")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Use dynamic port for deployment
+    port = int(os.environ.get("PORT", 8000))  # Use dynamic port for deployment
     app.run(host="0.0.0.0", port=port)
